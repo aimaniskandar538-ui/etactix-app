@@ -1,0 +1,6 @@
+   235.6ms (setup:1953): 2026-09-05 15:27:16
+   235.8ms (setup:1954): /data/data/com.termux/files/usr/bin/pipx ensurepath
+   235.9ms (setup:1955): pipx version is 1.17.2
+   236.0ms (setup:1956): Default python interpreter is '/data/data/com.termux/files/usr/bin/python3.14'
+   236.2ms (_validate_backend_available:391): Backend resolved to pip (source: auto-pip)
+   318.6ms (cli:2061): pipx finished.

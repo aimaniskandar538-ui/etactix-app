@@ -1,0 +1,70 @@
+   210.9ms (setup:1953): 2026-09-05 15:06:58
+   211.1ms (setup:1954): /data/data/com.termux/files/usr/bin/pipx install git+https://github.com/Alishahryar1/free-claude-code.git
+   211.1ms (setup:1955): pipx version is 1.17.2
+   211.2ms (setup:1956): Default python interpreter is '/data/data/com.termux/files/usr/bin/python3.14'
+   211.4ms (_validate_backend_available:391): Backend resolved to pip (source: auto-pip)
+   212.6ms (_parsed_package_to_package_or_url:152): cleaned package spec: git+https://github.com/Alishahryar1/free-claude-code.git
+   213.2ms (create_venv:315): Creating virtual environment
+   213.7ms (run_subprocess:217): running /data/data/com.termux/files/usr/bin/python3.14 -m venv --without-pip /data/data/com.termux/files/usr/tmp/tmpp116zg4k
+   290.0ms (run_subprocess:256): stdout:
+   290.1ms (run_subprocess:258): stderr:
+   290.1ms (run_subprocess:259): returncode: 0
+   292.6ms (run_subprocess:217): running <checking pip's availability>
+   358.4ms (run_subprocess:259): returncode: 0
+   358.9ms (run_subprocess:217): running /data/data/com.termux/files/usr/tmp/tmpp116zg4k/bin/python -c import sysconfig; print(sysconfig.get_path('purelib')); print(sysconfig.get_path('platlib'))
+   394.4ms (run_subprocess:256): stdout: /data/data/com.termux/files/usr/tmp/tmpp116zg4k/lib/python3.14/site-packages
+/data/data/com.termux/files/usr/tmp/tmpp116zg4k/lib/python3.14/site-packages
+   394.6ms (run_subprocess:259): returncode: 0
+   395.2ms (run_subprocess:217): running /data/data/com.termux/files/home/.local/share/pipx/shared/bin/python -c import sysconfig; print(sysconfig.get_path('purelib')); print(sysconfig.get_path('platlib'))
+   424.8ms (run_subprocess:256): stdout: /data/data/com.termux/files/home/.local/share/pipx/shared/lib/python3.14/site-packages
+/data/data/com.termux/files/home/.local/share/pipx/shared/lib/python3.14/site-packages
+   425.0ms (run_subprocess:259): returncode: 0
+   425.7ms (run_subprocess:217): running /data/data/com.termux/files/usr/tmp/tmpp116zg4k/bin/python --version
+   431.5ms (run_subprocess:256): stdout: Python 3.14.6
+   431.6ms (run_subprocess:258): stderr:
+   431.7ms (run_subprocess:259): returncode: 0
+   432.0ms (run_subprocess:217): running /data/data/com.termux/files/usr/tmp/tmpp116zg4k/bin/python -m pip list --format=json
+   680.3ms (run_subprocess:256): stdout: [{"name": "pip", "version": "26.2.1"}]
+   680.5ms (run_subprocess:258): stderr:
+   680.5ms (run_subprocess:259): returncode: 0
+   680.9ms (run_subprocess:217): running /data/data/com.termux/files/usr/tmp/tmpp116zg4k/bin/python -m pip --no-input install --no-dependencies --progress-bar=on git+https://github.com/Alishahryar1/free-claude-code.git
+  7043.8ms (run_subprocess:259): returncode: 0
+  7044.1ms (run_subprocess:217): running /data/data/com.termux/files/usr/tmp/tmpp116zg4k/bin/python -m pip list --format=json
+  7287.9ms (run_subprocess:256): stdout: [{"name": "free-claude-code", "version": "5.22.4"}, {"name": "pip", "version": "26.2.1"}]
+  7288.1ms (run_subprocess:258): stderr:
+  7288.2ms (run_subprocess:259): returncode: 0
+  7288.4ms (install_package_no_deps:572): Determined package name: free-claude-code
+  7313.9ms (package_name_from_spec:533): Package name determined in 7.1s
+  7315.2ms (create_venv:315): Creating virtual environment
+  7316.5ms (run_subprocess:217): running /data/data/com.termux/files/usr/bin/python3.14 -m venv --without-pip /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code
+  7398.5ms (run_subprocess:256): stdout:
+  7398.6ms (run_subprocess:258): stderr:
+  7398.7ms (run_subprocess:259): returncode: 0
+  7400.0ms (run_subprocess:217): running /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/bin/python -c import sysconfig; print(sysconfig.get_path('purelib')); print(sysconfig.get_path('platlib'))
+  7437.5ms (run_subprocess:256): stdout: /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/lib/python3.14/site-packages
+/data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/lib/python3.14/site-packages
+  7437.6ms (run_subprocess:259): returncode: 0
+  7438.5ms (run_subprocess:217): running /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/bin/python --version
+  7444.7ms (run_subprocess:256): stdout: Python 3.14.6
+  7444.8ms (run_subprocess:258): stderr:
+  7444.8ms (run_subprocess:259): returncode: 0
+  7445.2ms (_parsed_package_to_package_or_url:152): cleaned package spec: git+https://github.com/Alishahryar1/free-claude-code.git
+  7445.3ms (install_package:413): Installing free-claude-code from spec 'git+https://github.com/Alishahryar1/free-claude-code.git'
+  7445.5ms (run_subprocess:217): running /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/bin/python -m pip --no-input install --progress-bar=on git+https://github.com/Alishahryar1/free-claude-code.git
+1148269.8ms (run_subprocess:259): returncode: 0
+1148272.7ms (run_subprocess:217): running <fetch_info_in_venv commands>
+1148317.1ms (run_subprocess:256): stdout: {"sys_path": ["/data/data/com.termux/files/usr/lib/python314.zip", "/data/data/com.termux/files/usr/lib/python3.14", "/data/data/com.termux/files/usr/lib/python3.14/lib-dynload", "/data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/lib/python3.14/site-packages", "/data/data/com.termux/files/home/.local/share/pipx/shared/lib/python3.14/site-packages"], "python_version": "3.14.6", "environment": {"implementation_name": "cpython", "implementation_version": "3.14.6", "os_name": "posix", "platform_machine": "aarch64", "platform_release": "14", "platform_system": "Android", "platform_version": "#1 SMP PREEMPT Tue Dec 9 07:35:03 UTC 2025", "python_full_version": "3.14.6", "platform_python_implementation": "CPython", "python_version": "3.14", "sys_platform": "android"}}
+1148317.2ms (run_subprocess:259): returncode: 0
+1148763.6ms (get_venv_metadata_for_package:587): get_venv_metadata_for_package: 491ms
+1148763.9ms (_parsed_package_to_package_or_url:152): cleaned package spec: git+https://github.com/Alishahryar1/free-claude-code.git
+1148765.9ms (run_subprocess:217): running /data/data/com.termux/files/home/.local/share/pipx/venvs/free-claude-code/bin/python -c import sys;from importlib.metadata import distribution;print(distribution(sys.argv[1]).metadata.get('Requires-Python') or '');print('.'.join(str(part) for part in sys.version_info[:3])) free-claude-code
+1148868.4ms (run_subprocess:259): returncode: 0
+1148887.4ms (render_messages:81): ⚠️  Note:
+    '/data/data/com.termux/files/home/.local/bin'
+    is not on your PATH environment variable.
+    These apps will not be globally accessible
+    until your PATH is updated. Run `pipx
+    ensurepath` to automatically add it, or
+    manually modify your PATH in your shell's
+    config file (e.g. ~/.bashrc).
+1148887.7ms (cli:2061): pipx finished.

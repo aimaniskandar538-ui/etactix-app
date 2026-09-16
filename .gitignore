@@ -1,0 +1,8 @@
+.cargo/
+.venv/
+venv/
+__pycache__/
+*.pyc
+etactix-flutter/build/
+etactix-flutter/.dart_tool/
+etactix-flutter/.idea/

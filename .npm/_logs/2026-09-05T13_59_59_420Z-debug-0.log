@@ -1,0 +1,35 @@
+0 verbose cli /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/bin/npm
+1 info using npm@11.19.1
+2 info using node@v26.4.0
+3 silly config load:file:/data/data/com.termux/files/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/data/data/com.termux/files/home/.npmrc
+5 silly config load:file:/data/data/com.termux/files/usr/etc/npmrc
+6 verbose title npm install free-claude-code
+7 verbose argv "install" "--global" "free-claude-code"
+8 verbose logfile logs-max:10 dir:/data/data/com.termux/files/home/.npm/_logs/2026-09-05T13_59_59_420Z-
+9 verbose logfile /data/data/com.termux/files/home/.npm/_logs/2026-09-05T13_59_59_420Z-debug-0.log
+10 silly packumentCache heap:2248146944 maxSize:562036736 maxEntrySize:281018368
+11 silly logfile done cleaning log files
+12 silly idealTree buildDeps
+13 silly fetch manifest free-claude-code@*
+14 silly packumentCache full:https://registry.npmjs.org/free-claude-code cache-miss
+15 http fetch GET 200 https://registry.npmjs.org/free-claude-code 586ms (cache miss)
+16 silly packumentCache full:https://registry.npmjs.org/free-claude-code set size:undefined disposed:false
+17 silly placeDep ROOT free-claude-code@2.0.0 OK for:  want: *
+18 silly reify moves {}
+19 http cache free-claude-code@https://registry.npmjs.org/free-claude-code/-/free-claude-code-2.0.0.tgz 0ms (cache hit)
+20 silly tarball no local data for free-claude-code@https://registry.npmjs.org/free-claude-code/-/free-claude-code-2.0.0.tgz. Extracting by manifest.
+21 http fetch GET 200 https://registry.npmjs.org/npm 775ms
+22 http fetch GET 200 https://registry.npmjs.org/free-claude-code/-/free-claude-code-2.0.0.tgz 287ms (cache miss)
+23 silly ADD node_modules/free-claude-code
+24 verbose cwd /data/data/com.termux/files/home
+25 verbose os Linux 5.10.226-android12-9-g66fdac87ba52
+26 verbose node v26.4.0
+27 verbose npm  v11.19.1
+28 notice
+28 notice New [31mmajor[39m version of npm available! [31m11.19.1[39m -> [34m12.0.2[39m
+28 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v12.0.2[39m
+28 notice To update run: [4mnpm install -g npm@12.0.2[24m
+28 notice  { force: true, Symbol(proc-log.meta): true }
+29 verbose exit 0
+30 info ok

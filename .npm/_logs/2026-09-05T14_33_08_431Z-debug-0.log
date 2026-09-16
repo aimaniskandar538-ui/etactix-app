@@ -1,0 +1,86 @@
+0 verbose cli /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/bin/npm
+1 info using npm@11.19.1
+2 info using node@v26.4.0
+3 silly config load:file:/data/data/com.termux/files/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/data/data/com.termux/files/home/.npmrc
+5 silly config load:file:/data/data/com.termux/files/usr/etc/npmrc
+6 verbose title npm install @anthropic-ai/claude-code
+7 verbose argv "install" "--global" "--ignore-scripts" "@anthropic-ai/claude-code"
+8 verbose logfile logs-max:10 dir:/data/data/com.termux/files/home/.npm/_logs/2026-09-05T14_33_08_431Z-
+9 verbose logfile /data/data/com.termux/files/home/.npm/_logs/2026-09-05T14_33_08_431Z-debug-0.log
+10 silly packumentCache heap:2248146944 maxSize:562036736 maxEntrySize:281018368
+11 silly logfile done cleaning log files
+12 silly idealTree buildDeps
+13 silly fetch manifest @anthropic-ai/claude-code@*
+14 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code cache-miss
+15 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code 431ms (cache revalidated)
+16 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code set size:1409753 disposed:false
+17 silly placeDep ROOT @anthropic-ai/claude-code@2.1.261 OK for:  want: *
+18 silly fetch manifest @anthropic-ai/claude-code-linux-x64@2.1.261
+19 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64 cache-miss
+20 silly fetch manifest @anthropic-ai/claude-code-win32-x64@2.1.261
+21 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-x64 cache-miss
+22 silly fetch manifest @anthropic-ai/claude-code-darwin-x64@2.1.261
+23 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-x64 cache-miss
+24 silly fetch manifest @anthropic-ai/claude-code-linux-arm64@2.1.261
+25 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64 cache-miss
+26 silly fetch manifest @anthropic-ai/claude-code-win32-arm64@2.1.261
+27 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-arm64 cache-miss
+28 silly fetch manifest @anthropic-ai/claude-code-darwin-arm64@2.1.261
+29 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-arm64 cache-miss
+30 silly fetch manifest @anthropic-ai/claude-code-linux-x64-musl@2.1.261
+31 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64-musl cache-miss
+32 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64 141ms (cache revalidated)
+33 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64 set size:298358 disposed:false
+34 silly fetch manifest @anthropic-ai/claude-code-linux-arm64-musl@2.1.261
+35 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64-musl cache-miss
+36 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64-musl 112ms (cache revalidated)
+37 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-arm64-musl set size:298738 disposed:false
+38 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-x64 333ms (cache revalidated)
+39 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-x64 set size:293804 disposed:false
+40 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-arm64 369ms (cache revalidated)
+41 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-win32-arm64 set size:291091 disposed:false
+42 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64-musl 375ms (cache revalidated)
+43 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64-musl set size:301191 disposed:false
+44 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-x64 387ms (cache revalidated)
+45 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-x64 set size:289902 disposed:false
+46 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64 394ms (cache revalidated)
+47 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-linux-x64 set size:295996 disposed:false
+48 http fetch GET 200 https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-arm64 398ms (cache revalidated)
+49 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fclaude-code-darwin-arm64 set size:297327 disposed:false
+50 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-darwin-arm64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+51 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-darwin-x64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+52 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-linux-arm64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+53 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-linux-arm64-musl@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+54 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-linux-x64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+55 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-linux-x64-musl@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+56 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-win32-arm64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+57 silly placeDep node_modules/@anthropic-ai/claude-code @anthropic-ai/claude-code-win32-x64@2.1.261 OK for: @anthropic-ai/claude-code@2.1.261 want: 2.1.261
+58 silly reify moves {}
+59 verbose stack Error: EEXIST: file already exists
+59 verbose stack     at failEEXIST (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/bin-links/lib/check-bin.js:49:32)
+59 verbose stack     at handleReadLinkError (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/bin-links/lib/check-bin.js:25:5)
+59 verbose stack     at /data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/bin-links/lib/check-bin.js:29:18
+59 verbose stack     at async checkLink (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/bin-links/lib/check-bin.js:28:19)
+59 verbose stack     at async Promise.all (index 0)
+59 verbose stack     at async binLinks.checkBins (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/bin-links/lib/check-bins.js:15:3)
+59 verbose stack     at async [checkBins] (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/rebuild.js:232:5)
+59 verbose stack     at async /data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:698:7
+59 verbose stack     at async Promise.allSettled (index 0)
+59 verbose stack     at async #reifyPackages (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:353:11)
+60 error code EEXIST
+61 error path /data/data/com.termux/files/usr/bin/claude
+62 error EEXIST: file already exists
+63 error File exists: /data/data/com.termux/files/usr/bin/claude
+64 error Remove the existing file and try again, or run npm
+65 error with --force to overwrite files recklessly.
+66 silly unfinished npm timer reify 1788618788795
+67 silly unfinished npm timer reify:unpack 1788618789742
+68 silly unfinished npm timer reifyNode:node_modules/@anthropic-ai/claude-code 1788618789742
+69 verbose cwd /data/data/com.termux/files/home
+70 verbose os Linux 5.10.226-android12-9-g66fdac87ba52
+71 verbose node v26.4.0
+72 verbose npm  v11.19.1
+73 verbose exit 1
+74 verbose code 1
+75 error A complete log of this run can be found in: /data/data/com.termux/files/home/.npm/_logs/2026-09-05T14_33_08_431Z-debug-0.log
