@@ -85,7 +85,7 @@ class DashboardTab extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.all(20),
@@ -97,9 +97,9 @@ class DashboardTab extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
-                crossAxisAlignment: CrossAlignment.start,
-                children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
                   Text('محرك الذكاء الاصطناعي نشط 🚀', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                   SizedBox(height: 8),
                   Text('جاهز لتنفيذ المهام، توليد البرمجيات، وإدارة الوكلاء التلقائية.', style: TextStyle(color: Colors.white70, fontSize: 13)),
@@ -140,7 +140,7 @@ class DashboardTab extends StatelessWidget {
           border: Border.all(color: Colors.white10),
         ),
         child: Column(
-          crossAxisAlignment: CrossAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
@@ -361,7 +361,7 @@ class AnalyticsTab extends StatelessWidget {
 
   Widget _buildMetricBar(String label, double value, Color color) {
     return Column(
-      crossAxisAlignment: CrossAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
