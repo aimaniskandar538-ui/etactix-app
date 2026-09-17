@@ -36,24 +36,30 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    DashboardTab(),
-    AgentsTab(),
-    CodeGeneratorTab(),
-    AnalyticsTab(),
-    SettingsTab(),
-  ];
+  void _changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      DashboardTab(onNavigate: _changeTab),
+      const AgentsTab(),
+      const CodeGeneratorTab(),
+      const AnalyticsTab(),
+      const SettingsTab(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: _changeTab,
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFF1E293B),
         selectedItemColor: const Color(0xFF3B82F6),
@@ -72,7 +78,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
 // ==================== 1. DASHBOARD TAB ====================
 class DashboardTab extends StatelessWidget {
-  const DashboardTab({super.key});
+  final Function(int) onNavigate;
+  const DashboardTab({super.key, required this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -107,21 +114,19 @@ class DashboardTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('نظرة عامة على النظام', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const Text('انقر للذهاب إلى القسم المطلوب', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 12),
-            Row(
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
               children: [
-                _buildStatCard('الوكلاء النشطون', '4', Icons.android, Colors.green),
-                const SizedBox(width: 12),
-                _buildStatCard('المهام المكتملة', '128', Icons.check_circle, Colors.blue),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildStatCard('استهلاك الـ API', '84%', Icons.speed, Colors.orange),
-                const SizedBox(width: 12),
-                _buildStatCard('معدل الدقة', '99.2%', Icons.verified, Colors.purple),
+                _buildActionCard('AI Agents', 'إدارة الوكلاء والشات', Icons.smart_toy, Colors.blue, () => onNavigate(1)),
+                _buildActionCard('Code Generator', 'توليد وتدقيق الكود', Icons.code, Colors.purple, () => onNavigate(2)),
+                _buildActionCard('Analytics', 'تحليلات النظام', Icons.bar_chart, Colors.amber, () => onNavigate(3)),
+                _buildActionCard('Settings', 'المفاتيح والإعدادات', Icons.settings, Colors.teal, () => onNavigate(4)),
               ],
             ),
           ],
@@ -130,24 +135,29 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  static Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 4),
-            Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          ],
+  Widget _buildActionCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 36),
+              const SizedBox(height: 12),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 4),
+              Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
+            ],
+          ),
         ),
       ),
     );
@@ -164,7 +174,7 @@ class AgentsTab extends StatefulWidget {
 
 class _AgentsTabState extends State<AgentsTab> {
   final List<Map<String, String>> _messages = [
-    {'sender': 'agent', 'text': 'مرحباً! أنا وكيل eTactix الذكي. كيف يمكنني مساعدتك في مشروعك اليوم؟'}
+    {'sender': 'agent', 'text': 'مرحباً! أنا وكيل eTactix الذكي. كيف يمكنني مساعدتك اليوم؟'}
   ];
   final TextEditingController _controller = TextEditingController();
 
@@ -179,7 +189,7 @@ class _AgentsTabState extends State<AgentsTab> {
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
-          _messages.add({'sender': 'agent', 'text': 'تم استلام أمرك: "$userText". جاري معالجة المهام وتنفيد الخطوات التلقائية...'});
+          _messages.add({'sender': 'agent', 'text': 'تم استلام الأمر: "$userText". جاري المعالجة...'});
         });
       }
     });
@@ -254,19 +264,14 @@ class CodeGeneratorTab extends StatefulWidget {
 
 class _CodeGeneratorTabState extends State<CodeGeneratorTab> {
   final TextEditingController _promptController = TextEditingController();
-  String _generatedCode = '// الكود المولد سيتعرف هنا تلقائياً...\n\nvoid main() {\n  print("eTactix AI Code Engine Loaded");\n}';
+  String _generatedCode = '// اكتب وصفك أعلاه ثم اضغط على زر التوليد...';
 
   void _generateCode() {
     if (_promptController.text.trim().isEmpty) return;
     setState(() {
       _generatedCode = '// كود مُولد بناءً على: "${_promptController.text}"\n\n'
-          'class GeneratedTask {\n'
-          '  final String id;\n'
-          '  final bool status;\n\n'
-          '  GeneratedTask({required this.id, required this.status});\n'
-          '}\n\n'
-          'void execute() {\n'
-          '  print("Executing AI generated script...");\n'
+          'void executeTask() {\n'
+          '  print("Running AI Task...");\n'
           '}';
     });
   }
@@ -283,7 +288,7 @@ class _CodeGeneratorTabState extends State<CodeGeneratorTab> {
               controller: _promptController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'وصف السكريبت أو الميزة المطلوبة...',
+                hintText: 'وصف السكريبت المطلوب...',
                 hintStyle: const TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
@@ -316,7 +321,7 @@ class _CodeGeneratorTabState extends State<CodeGeneratorTab> {
             ElevatedButton.icon(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: _generatedCode));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الكود للحافظة!')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الكود!')));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1E293B),
@@ -348,12 +353,6 @@ class AnalyticsTab extends StatelessWidget {
           _buildMetricBar('استهلاك الذاكرة (RAM)', 0.62, Colors.purple),
           const SizedBox(height: 16),
           _buildMetricBar('استجابة الـ API (Latency)', 0.18, Colors.green),
-          const SizedBox(height: 24),
-          const Text('سجل النشاطات الأخيرة', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 12),
-          _buildLogTile('توليد وتحديث ملف build.yml بنجاح', 'منذ 5 دقائق'),
-          _buildLogTile('تفعيل الوكيل الذكي Autonomous Agent', 'منذ 18 دقيقة'),
-          _buildLogTile('مزامنة المستودع مع GitHub CI/CD', 'منذ ساعة'),
         ],
       ),
     );
@@ -375,21 +374,6 @@ class AnalyticsTab extends StatelessWidget {
       ],
     );
   }
-
-  Widget _buildLogTile(String text, String time) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(8)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 13)),
-          Text(time, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-        ],
-      ),
-    );
-  }
 }
 
 // ==================== 5. SETTINGS TAB ====================
@@ -403,31 +387,9 @@ class SettingsTab extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('مفاتيح الـ API المفعلة', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 8),
           _buildInputField('Gemini API Key', '••••••••••••••••', Icons.key),
           const SizedBox(height: 12),
           _buildInputField('GitHub Personal Access Token', '••••••••••••••••', Icons.code),
-          const SizedBox(height: 24),
-          const Text('خيارات النظام', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            title: const Text('التشغيل التلقائي للوكلاء', style: TextStyle(color: Colors.white)),
-            value: true,
-            onChanged: (v) {},
-            activeColor: const Color(0xFF3B82F6),
-            tileColor: const Color(0xFF1E293B),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            title: const Text('الإشعارات والتنبيهات الفورية', style: TextStyle(color: Colors.white)),
-            value: false,
-            onChanged: (v) {},
-            activeColor: const Color(0xFF3B82F6),
-            tileColor: const Color(0xFF1E293B),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
         ],
       ),
     );
