@@ -1,0 +1,67 @@
+name: Autonomous Business Content Engine
+
+on:
+  schedule:
+    - cron: "0 8,16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  autonomous-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Environment & FFmpeg
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+
+      - name: Execute Full Production Engine
+        run: |
+          python3 - <<'PYEOF'
+          import os, shutil, subprocess, sys, zipfile
+          from pathlib import Path
+
+          ws = Path(os.environ["GITHUB_WORKSPACE"])
+          z = next((p for p in sorted(ws.glob("*.zip")) if "acp" in p.name.lower()), None)
+          if not z: sys.exit(1)
+
+          out = Path("/tmp/acp-extract")
+          shutil.rmtree(out, ignore_errors=True)
+          with zipfile.ZipFile(z) as f: f.extractall(out)
+
+          cands = [out, *sorted(p for p in out.iterdir() if p.is_dir())]
+          root = next((d for d in cands if (d / "acp" / "cli.py").is_file()), None)
+          if not root: sys.exit(1)
+
+          for entry in root.iterdir():
+              if entry.name == ".git": continue
+              dst = ws / entry.name
+              if entry.is_dir(): shutil.copytree(entry, dst, dirs_exist_ok=True)
+              else: shutil.copy2(entry, dst)
+
+          subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "requests", "edge-tts"])
+
+          cmd = [sys.executable, "-m", "acp.cli", "run"]
+          subprocess.run(cmd, cwd=ws)
+          PYEOF
+
+      - name: Save All Generated Videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-business-videos-${{ github.run_number }}
+          path: |
+            *.mp4
+            work/**/*.mp4
+            output/**/*.mp4
+            outputs/**/*.mp4
+            dist/**/*.mp4
+            videos/**/*.mp4
+          if-no-files-found: ignore

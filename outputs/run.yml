@@ -1,0 +1,126 @@
+name: Autonomous Business Content Engine
+
+# Replaces .github/workflows/run.yml
+# The whole pipeline lives in ci/autopilot.py (commit that file too).
+#
+# Why the old version always said "nothing to do: no --idea/--limit jobs in state 'new'":
+#   `acp run` defaults --limit to 0, so with no --idea/--job/--limit it is a documented
+#   no-op that still exits 0 - a green run with an empty artifact.
+#
+# GEMINI NOTE (important): acp/llm.py has NO native Gemini branch. It only knows
+# 'anthropic', 'echo', and OpenAI-shaped POST /chat/completions. And config.py reads the
+# key from LLM_API_KEY or OPENAI_API_KEY only - it never looks at GEMINI_API_KEY.
+# So `LLM_PROVIDER: gemini` on its own would still call api.openai.com with the dead key.
+# The three lines that actually switch the engine to Google AI Studio are:
+#     LLM_BASE_URL  -> Google's OpenAI-compatible endpoint
+#     LLM_MODEL     -> a Gemini model id
+#     LLM_API_KEY   -> your Gemini key (GEMINI_API_KEY is also exported for clarity)
+# ci/autopilot.py fills those in for you when LLM_PROVIDER=gemini, so both are wired here.
+
+on:
+  schedule:
+    - cron: "0 8,16 * * *"
+  workflow_dispatch:
+    inputs:
+      idea:
+        description: "Make exactly this video (leave empty to auto-pick a trend)"
+        required: false
+        default: ""
+      limit:
+        description: "How many videos to render this run"
+        required: false
+        default: "2"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acp-engine
+  cancel-in-progress: false          # never kill a render mid-write
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PIPELINE_IDEA: ${{ inputs.idea }}
+  PIPELINE_LIMIT: ${{ inputs.limit || '2' }}
+
+  # ---- providers -----------------------------------------------------------
+  LLM_PROVIDER: gemini
+  LLM_MODEL: gemini-2.5-flash        # free tier; gemini-2.5-flash-lite is cheaper/faster
+  LLM_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai
+  LLM_MAX_OUTPUT_TOKENS: "8192"      # 2.5-flash spends output tokens on hidden thinking;
+                                     # a small budget returns an empty message
+  ASSET_PROVIDER: pexels             # needs PEXELS_API_KEY below, else it self-heals to mock
+  TTS_PROVIDER: edge                 # free, no key
+
+  # ---- secrets -------------------------------------------------------------
+  # Settings -> Secrets and variables -> Actions -> New repository secret
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}   # what acp/config.py actually reads
+  PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+  PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+  # OPENAI_API_KEY is deliberately NOT passed: the account is out of credit, and
+  # config.py would happily use it if LLM_API_KEY were ever empty.
+
+  # ---- render settings -----------------------------------------------------
+  REQUIRE_APPROVAL: "false"          # rendered jobs land in state 'approved'
+  AUTO_PUBLISH: "false"              # render only; never touch a platform API from CI
+  TARGET_SECONDS: "26"
+  VIDEO_W: "1080"
+  VIDEO_H: "1920"
+  X264_PRESET: veryfast
+  DAILY_BUDGET_USD: "5"
+  MIN_GAP_MINUTES: "0"
+  GEO: US
+
+jobs:
+  autonomous-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5           # v4 runs on Node 20, removed from runners 2026-09-16
+
+      - name: Setup FFmpeg + fonts
+        run: |
+          set -e
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core fontconfig
+          ffmpeg -hide_banner -filters  | grep -q subtitles \
+            || { echo "::error::this ffmpeg has no libass - captions cannot be burned in"; exit 1; }
+          ffmpeg -hide_banner -encoders | grep -q libx264 \
+            || { echo "::error::this ffmpeg has no libx264"; exit 1; }
+          ffmpeg -version | head -1
+
+      - name: Check the Gemini key reaches Google
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::warning::GEMINI_API_KEY secret is empty - the run will use the offline 'echo' writer"
+            exit 0
+          fi
+          code=$(curl -s -o /tmp/gem.json -w '%{http_code}' \
+            -X POST "$LLM_BASE_URL/chat/completions" \
+            -H "Authorization: Bearer $GEMINI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"model\":\"$LLM_MODEL\",\"max_tokens\":32,\"messages\":[{\"role\":\"user\",\"content\":\"reply with {\\\"ok\\\":true}\"}]}")
+          echo "Gemini $LLM_MODEL -> HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::warning::Gemini rejected the request (HTTP $code). The engine will fall back to the offline writer so you still get a video."
+            head -c 400 /tmp/gem.json
+          fi
+
+      # Unpacks the zip, seeds the queue (never empty), renders, and exits non-zero
+      # if no .mp4 was produced. Degrades a dead provider instead of failing the run.
+      - name: Execute Full Production Engine
+        run: python3 ci/autopilot.py
+
+      - name: Save All Generated Videos
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: final-business-videos-${{ github.run_number }}
+          path: |
+            videos/*.mp4
+            work/job_*/final.mp4
+            work/job_*/captions.vtt
+            work/job_*/qc.json
+          if-no-files-found: warn
+          retention-days: 14

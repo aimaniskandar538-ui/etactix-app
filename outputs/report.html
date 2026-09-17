@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Switching ACP to Gemini</title>
+<style>
+:root{--bg:#0b0d10;--fg:#e8eaed;--dim:#9aa3ad;--card:#14181d;--line:#242a31;--ok:#3ddc84;--bad:#ff6b6b;--acc:#ffc93c;--blue:#7cc4ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 20px 60px}
+h1{font-size:29px;margin:0 0 4px;letter-spacing:-.4px}
+h2{font-size:16px;margin:28px 0 12px;color:var(--acc);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.sub{color:var(--dim);margin:0 0 22px;max-width:900px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{margin:0 0 9px;font-size:15px}
+.card p{margin:0 0 8px;color:var(--dim);font-size:13.5px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+code{background:#1d2329;padding:1px 5px;border-radius:4px;font-size:12.5px;color:#ffd479}
+pre{background:#0e1216;border:1px solid var(--line);border-radius:10px;padding:13px;overflow:auto;font-size:12.5px;margin:0;max-height:340px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600;font-size:11.5px;text-transform:uppercase}
+.bad{color:var(--bad)}.ok{color:var(--ok)}.blue{color:var(--blue)}
+.warn{border-left:3px solid var(--acc)}
+ol,ul{margin:0;padding-left:20px}li{margin:5px 0;font-size:13.5px}
+.kv{font-size:13px}
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Gemini is wired in — but not the way you asked</h1>
+<p class="sub">Your three changes alone would have failed with the <i>same</i> OpenAI 429. <code>acp/llm.py</code> has no Gemini branch, and <code>acp/config.py:128</code> never reads <code>GEMINI_API_KEY</code>. I added the two lines that actually redirect the engine to Google, kept your three, and made a dead LLM stop killing the whole run.</p>
+
+<div class="card warn">
+  <h3>Why <code>LLM_PROVIDER: gemini</code> on its own is a no-op</h3>
+  <p><code>llm.py:70-96</code> has exactly three paths: <code>echo</code>, <code>anthropic</code>, and <b>everything else</b> — which POSTs OpenAI-shaped JSON to <code>LLM_BASE_URL + /chat/completions</code> with <code>Authorization: Bearer &lt;llm_api_key&gt;</code>. <code>LLM_BASE_URL</code> defaults to <code>https://api.openai.com/v1</code> and <code>llm_api_key</code> is <code>LLM_API_KEY or OPENAI_API_KEY</code>. So an unknown provider name changes nothing: same URL, same exhausted key, same <code>429 insufficient_quota</code>.</p>
+  <p style="color:var(--fg)">That "everything else" path is also the fix. Google serves an OpenAI-compatible endpoint, so Gemini needs no code change — only the right base URL, model id and key location.</p>
+</div>
+
+<h2>What changed in run.yml</h2>
+<div class="card">
+<table>
+  <tr><th>Variable</th><th>Value</th><th>Why</th></tr>
+  <tr><td><code>LLM_PROVIDER</code></td><td class="ok">gemini</td><td>Your request. Also deliberately <i>not</i> in llm.py's <code>json_object</code> list, so no <code>response_format</code> is sent — Gemini's compat layer is happiest without it, and <code>_extract_json()</code> already strips <code>```json</code> fences.</td></tr>
+  <tr><td><code>LLM_BASE_URL</code></td><td class="blue">…/v1beta/openai</td><td><b>The line that actually switches providers.</b> Verified live: the route answers Google's auth layer, not a 404.</td></tr>
+  <tr><td><code>LLM_API_KEY</code></td><td class="blue">secrets.GEMINI_API_KEY</td><td><b>Required.</b> The only name config.py reads. <code>GEMINI_API_KEY</code> is exported too, as you asked, and autopilot.py copies it across either way.</td></tr>
+  <tr><td><code>LLM_MODEL</code></td><td>gemini-2.5-flash</td><td>Stable free-tier id.</td></tr>
+  <tr><td><code>LLM_MAX_OUTPUT_TOKENS</code></td><td>8192</td><td>2.5-flash spends output tokens on hidden thinking. At the default 1400 it can return an <b>empty</b> message, which surfaces as <code>no JSON object in model output</code> — a confusing failure that looks nothing like a token limit.</td></tr>
+  <tr><td><code>OPENAI_API_KEY</code></td><td class="bad">removed</td><td>The dead key would still be used any time <code>LLM_API_KEY</code> resolved empty. Better to have no key than a 429 key.</td></tr>
+  <tr><td><code>ASSET_PROVIDER</code></td><td class="ok">pexels</td><td>Kept, as requested. Needs the <code>PEXELS_API_KEY</code> secret.</td></tr>
+  <tr><td><code>TTS_PROVIDER</code></td><td class="ok">edge</td><td>Kept. Free, no key.</td></tr>
+</table>
+</div>
+
+<h2>New: a dead API no longer fails the run</h2>
+<div class="grid g3">
+  <div class="card">
+    <h3>Preflight step</h3>
+    <p>Before any rendering, one <code>curl</code> asks Gemini for a token and prints the HTTP code. You see <b>Gemini gemini-2.5-flash → HTTP 200</b> in the log, or a warning with Google's exact error — instead of discovering it 12 minutes into a render.</p>
+  </div>
+  <div class="card">
+    <h3>Self-degrading queue</h3>
+    <p>A quota, auth or empty-JSON failure now rewinds the job and retries it with the offline <code>echo</code> writer. Footage failures still fall back to synthetic clips. You get a video either way, and the summary names what degraded.</p>
+  </div>
+  <div class="card">
+    <h3>Honest reporting</h3>
+    <p>The run summary lists <code>degraded mid-run</code>, so a Gemini outage is visible rather than silently producing lower-quality scripts forever.</p>
+  </div>
+</div>
+
+<h2>Tested here, on a clean workspace</h2>
+<div class="grid g2">
+<div class="card">
+<table>
+  <tr><th>Scenario</th><th>Result</th></tr>
+  <tr><td>Gemini route reachable</td><td class="ok">confirmed (Google auth layer answers)</td></tr>
+  <tr><td>Invalid Gemini key + pexels with no key</td><td class="ok">both degraded, 1080×1920 video still rendered, exit 0</td></tr>
+  <tr><td>Missing <code>GEMINI_API_KEY</code></td><td class="ok">warned, offline writer, still renders</td></tr>
+  <tr><td>Preflight shell step verbatim</td><td class="ok">prints <code>HTTP 400</code> + Google's message</td></tr>
+  <tr><td>YAML parse + python compile</td><td class="ok">clean</td></tr>
+</table>
+<p style="margin-top:11px;color:var(--dim);font-size:13px">I could not exercise a real Gemini <b>200</b> — that needs one of your keys. Everything up to the auth boundary is verified; the preflight step will confirm the rest on your first run.</p>
+</div>
+<div class="card">
+  <h3>Do this</h3>
+  <ol>
+    <li>Add the secret: <b>Settings → Secrets and variables → Actions → New repository secret</b>, name <code>GEMINI_API_KEY</code>, paste a key from AI Studio.</li>
+    <li>Replace <code>.github/workflows/run.yml</code> with the file below.</li>
+    <li>Replace <code>ci/autopilot.py</code> with the updated version (it carries the Gemini mapping and the fallbacks).</li>
+    <li>Actions → Run workflow. Check the <b>Check the Gemini key reaches Google</b> step reads <code>HTTP 200</code>.</li>
+  </ol>
+  <p style="margin-top:8px">If it reads 200 but the summary still says <code>degraded: llm</code>, the model id is the suspect — try <code>gemini-2.5-flash-lite</code>.</p>
+</div>
+</div>
+
+<h2>.github/workflows/run.yml</h2>
+<div class="card"><pre id="yml">name: Autonomous Business Content Engine
+
+# Replaces .github/workflows/run.yml
+# The whole pipeline lives in ci/autopilot.py (commit that file too).
+#
+# Why the old version always said &quot;nothing to do: no --idea/--limit jobs in state &#x27;new&#x27;&quot;:
+#   `acp run` defaults --limit to 0, so with no --idea/--job/--limit it is a documented
+#   no-op that still exits 0 - a green run with an empty artifact.
+#
+# GEMINI NOTE (important): acp/llm.py has NO native Gemini branch. It only knows
+# &#x27;anthropic&#x27;, &#x27;echo&#x27;, and OpenAI-shaped POST /chat/completions. And config.py reads the
+# key from LLM_API_KEY or OPENAI_API_KEY only - it never looks at GEMINI_API_KEY.
+# So `LLM_PROVIDER: gemini` on its own would still call api.openai.com with the dead key.
+# The three lines that actually switch the engine to Google AI Studio are:
+#     LLM_BASE_URL  -&gt; Google&#x27;s OpenAI-compatible endpoint
+#     LLM_MODEL     -&gt; a Gemini model id
+#     LLM_API_KEY   -&gt; your Gemini key (GEMINI_API_KEY is also exported for clarity)
+# ci/autopilot.py fills those in for you when LLM_PROVIDER=gemini, so both are wired here.
+
+on:
+  schedule:
+    - cron: &quot;0 8,16 * * *&quot;
+  workflow_dispatch:
+    inputs:
+      idea:
+        description: &quot;Make exactly this video (leave empty to auto-pick a trend)&quot;
+        required: false
+        default: &quot;&quot;
+      limit:
+        description: &quot;How many videos to render this run&quot;
+        required: false
+        default: &quot;2&quot;
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acp-engine
+  cancel-in-progress: false          # never kill a render mid-write
+
+env:
+  PYTHONUNBUFFERED: &quot;1&quot;
+  PIPELINE_IDEA: ${{ inputs.idea }}
+  PIPELINE_LIMIT: ${{ inputs.limit || &#x27;2&#x27; }}
+
+  # ---- providers -----------------------------------------------------------
+  LLM_PROVIDER: gemini
+  LLM_MODEL: gemini-2.5-flash        # free tier; gemini-2.5-flash-lite is cheaper/faster
+  LLM_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai
+  LLM_MAX_OUTPUT_TOKENS: &quot;8192&quot;      # 2.5-flash spends output tokens on hidden thinking;
+                                     # a small budget returns an empty message
+  ASSET_PROVIDER: pexels             # needs PEXELS_API_KEY below, else it self-heals to mock
+  TTS_PROVIDER: edge                 # free, no key
+
+  # ---- secrets -------------------------------------------------------------
+  # Settings -&gt; Secrets and variables -&gt; Actions -&gt; New repository secret
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  LLM_API_KEY: ${{ secrets.GEMINI_API_KEY }}   # what acp/config.py actually reads
+  PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+  PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+  # OPENAI_API_KEY is deliberately NOT passed: the account is out of credit, and
+  # config.py would happily use it if LLM_API_KEY were ever empty.
+
+  # ---- render settings -----------------------------------------------------
+  REQUIRE_APPROVAL: &quot;false&quot;          # rendered jobs land in state &#x27;approved&#x27;
+  AUTO_PUBLISH: &quot;false&quot;              # render only; never touch a platform API from CI
+  TARGET_SECONDS: &quot;26&quot;
+  VIDEO_W: &quot;1080&quot;
+  VIDEO_H: &quot;1920&quot;
+  X264_PRESET: veryfast
+  DAILY_BUDGET_USD: &quot;5&quot;
+  MIN_GAP_MINUTES: &quot;0&quot;
+  GEO: US
+
+jobs:
+  autonomous-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5           # v4 runs on Node 20, removed from runners 2026-09-16
+
+      - name: Setup FFmpeg + fonts
+        run: |
+          set -e
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core fontconfig
+          ffmpeg -hide_banner -filters  | grep -q subtitles \
+            || { echo &quot;::error::this ffmpeg has no libass - captions cannot be burned in&quot;; exit 1; }
+          ffmpeg -hide_banner -encoders | grep -q libx264 \
+            || { echo &quot;::error::this ffmpeg has no libx264&quot;; exit 1; }
+          ffmpeg -version | head -1
+
+      - name: Check the Gemini key reaches Google
+        run: |
+          if [ -z &quot;$GEMINI_API_KEY&quot; ]; then
+            echo &quot;::warning::GEMINI_API_KEY secret is empty - the run will use the offline &#x27;echo&#x27; writer&quot;
+            exit 0
+          fi
+          code=$(curl -s -o /tmp/gem.json -w &#x27;%{http_code}&#x27; \
+            -X POST &quot;$LLM_BASE_URL/chat/completions&quot; \
+            -H &quot;Authorization: Bearer $GEMINI_API_KEY&quot; \
+            -H &quot;Content-Type: application/json&quot; \
+            -d &quot;{\&quot;model\&quot;:\&quot;$LLM_MODEL\&quot;,\&quot;max_tokens\&quot;:32,\&quot;messages\&quot;:[{\&quot;role\&quot;:\&quot;user\&quot;,\&quot;content\&quot;:\&quot;reply with {\\\&quot;ok\\\&quot;:true}\&quot;}]}&quot;)
+          echo &quot;Gemini $LLM_MODEL -&gt; HTTP $code&quot;
+          if [ &quot;$code&quot; != &quot;200&quot; ]; then
+            echo &quot;::warning::Gemini rejected the request (HTTP $code). The engine will fall back to the offline writer so you still get a video.&quot;
+            head -c 400 /tmp/gem.json
+          fi
+
+      # Unpacks the zip, seeds the queue (never empty), renders, and exits non-zero
+      # if no .mp4 was produced. Degrades a dead provider instead of failing the run.
+      - name: Execute Full Production Engine
+        run: python3 ci/autopilot.py
+
+      - name: Save All Generated Videos
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: final-business-videos-${{ github.run_number }}
+          path: |
+            videos/*.mp4
+            work/job_*/final.mp4
+            work/job_*/captions.vtt
+            work/job_*/qc.json
+          if-no-files-found: warn
+          retention-days: 14
+</pre></div>
+
+<h2>ci/autopilot.py — changed section</h2>
+<div class="card"><pre id="py"># in set_env():
+    # --- Gemini (Google AI Studio) --------------------------------------------
+    # acp/llm.py has no native Gemini branch: it only knows &#x27;anthropic&#x27;, &#x27;echo&#x27; and
+    # OpenAI-shaped /chat/completions. Google serves an OpenAI-compatible endpoint,
+    # so pointing LLM_BASE_URL at it is all Gemini needs - plus copying the key into
+    # LLM_API_KEY, because config.py only reads LLM_API_KEY / OPENAI_API_KEY.
+    gem = os.environ.get(&quot;GEMINI_API_KEY&quot;) or os.environ.get(&quot;GOOGLE_API_KEY&quot;) or &quot;&quot;
+    if os.environ.get(&quot;LLM_PROVIDER&quot;, &quot;&quot;).lower() in (&quot;gemini&quot;, &quot;google&quot;, &quot;googleai&quot;, &quot;google-ai-studio&quot;):
+        os.environ[&quot;LLM_PROVIDER&quot;] = &quot;gemini&quot;        # not in the json_object list -&gt; no response_format
+        os.environ.setdefault(&quot;LLM_BASE_URL&quot;, &quot;https://generativelanguage.googleapis.com/v1beta/openai&quot;)
+        os.environ.setdefault(&quot;LLM_MODEL&quot;, &quot;gemini-2.5-flash&quot;)
+        # 2.5-flash spends output tokens on hidden thinking; 1400 can return an empty
+        # message and then &quot;no JSON object in model output&quot;. Give it room.
+        os.environ.setdefault(&quot;LLM_MAX_OUTPUT_TOKENS&quot;, &quot;8192&quot;)
+        if gem and not os.environ.get(&quot;LLM_API_KEY&quot;):
+            os.environ[&quot;LLM_API_KEY&quot;] = gem
+        os.environ.pop(&quot;OPENAI_API_KEY&quot;, None)       # never let a dead OpenAI key win
+        if not os.environ.get(&quot;LLM_API_KEY&quot;):
+            gh(&quot;LLM_PROVIDER=gemini but no GEMINI_API_KEY secret - add it under &quot;
+               &quot;Settings -&gt; Secrets and variables -&gt; Actions, or the run falls back to the offline writer&quot;)
+    elif gem and not (os.environ.get(&quot;LLM_API_KEY&quot;) or os.environ.get(&quot;OPENAI_API_KEY&quot;)):
+        os.environ.update(LLM_PROVIDER=&quot;gemini&quot;, LLM_API_KEY=gem,
+                          LLM_BASE_URL=&quot;https://generativelanguage.googleapis.com/v1beta/openai&quot;)
+        os.environ.setdefault(&quot;LLM_MODEL&quot;, &quot;gemini-2.5-flash&quot;)
+        os.environ.setdefault(&quot;LLM_MAX_OUTPUT_TOKENS&quot;, &quot;8192&quot;)
+
+    # Only fall back to the free/offline providers when no key is present.
+    if not (os.environ.get(&quot;LLM_API_KEY&quot;) or os.environ.get(&quot;OPENAI_API_KEY&quot;)):
+        os.environ.setdefault(&quot;LLM_PROVIDER&quot;, &quot;echo&quot;)
+    if not (os.environ.get(&quot;PEXELS_API_KEY&quot;) or os.environ.get(&quot;PIXABAY_API_KEY&quot;)):
+        os.environ.setdefault(&quot;ASSET_PROVIDER&quot;, &quot;mock&quot;)
+    say(f&quot;LLM: {os.environ.get(&#x27;LLM_PROVIDER&#x27;, &#x27;openai&#x27;)} model={os.environ.get(&#x27;LLM_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} &quot;
+        f&quot;key={&#x27;set&#x27; if os.environ.get(&#x27;LLM_API_KEY&#x27;) else &#x27;-&#x27;} | footage: {os.environ.get(&#x27;ASSET_PROVIDER&#x27;, &#x27;pexels&#x27;)}&quot;
+        f&quot; | voice: {os.environ.get(&#x27;TTS_PROVIDER&#x27;)}&quot;)
+
+
+# module level, plus drive():
+LLM_SIGNS = (&quot;llmerror&quot;, &quot;insufficient_quota&quot;, &quot;credit_balance&quot;, &quot;http 429&quot;, &quot;http 401&quot;, &quot;http 403&quot;,
+             &quot;http 400&quot;, &quot;no json object&quot;, &quot;script rejected&quot;, &quot;rate limit&quot;, &quot;quota&quot;, &quot;resource_exhausted&quot;)
+
+
+def _degrade(cfg, kind: str) -&gt; str:
+    &quot;&quot;&quot;Swap one broken provider for its keyless equivalent, in-process.&quot;&quot;&quot;
+    if kind == &quot;llm&quot;:
+        os.environ[&quot;LLM_PROVIDER&quot;] = &quot;echo&quot;
+        if cfg._settings:
+            cfg._settings.llm_provider = &quot;echo&quot;
+        return &quot;LLM unusable (quota/auth/JSON) - retrying this job with the offline &#x27;echo&#x27; writer&quot;
+    os.environ[&quot;ASSET_PROVIDER&quot;] = &quot;mock&quot;
+    if cfg._settings:
+        cfg._settings.asset_provider = &quot;mock&quot;
+    return &quot;footage stage failed - retrying this job with ASSET_PROVIDER=mock&quot;
+
+
+def drive(p, ids: list[int]) -&gt; dict:
+    import acp.config as cfg
+
+    done, failed, degraded = [], [], []
+    for jid in ids:
+        for attempt in (1, 2, 3):
+            try:
+                p.run_job(jid, until=UNTIL)
+                job = p.db.get(jid)
+                if job[&quot;state&quot;] == &quot;new&quot;:
+                    gh(f&quot;job {jid} did not advance: {job.get(&#x27;error&#x27;) or &#x27;budget/attempt guard&#x27;}&quot;)
+                    failed.append((jid, job.get(&quot;error&quot;) or &quot;did not advance&quot;))
+                    break
+                done.append(jid)
+                say(f&quot;job {jid}: {job[&#x27;state&#x27;]}  cost ${job.get(&#x27;cost_usd&#x27;) or 0:.4f}&quot;)
+                break
+            except Exception as e:  # noqa: BLE001
+                err = f&quot;{type(e).__name__}: {e}&quot;
+                low = err.lower()
+                say(f&quot;job {jid}: FAILED {err[:300]}&quot;)
+                # Never let one dead API end the run: degrade that stage and retry.
+                st = cfg._settings
+                kind = None
+                if any(sign in low for sign in LLM_SIGNS) and getattr(st, &quot;llm_provider&quot;, &quot;echo&quot;) != &quot;echo&quot;:
+                    kind = &quot;llm&quot;
+                elif (&quot;footage&quot; in low or &quot;clip&quot; in low) and getattr(st, &quot;asset_provider&quot;, &quot;mock&quot;) != &quot;mock&quot;:
+                    kind = &quot;assets&quot;
+                if attempt &lt; 3 and kind:
+                    gh(_degrade(cfg, kind))
+                    degraded.append(kind)
+                    rewind(p.db, jid)
+                    continue
+                failed.append((jid, err[:400]))
+                break
+    return {&quot;done&quot;: done, &quot;failed&quot;: failed, &quot;degraded&quot;: sorted(set(degraded))}</pre></div>
+
+</div>
+</body>
+</html>

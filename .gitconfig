@@ -1,3 +1,9 @@
 [user]
 	email = aimaniskandar538@gmail.com
 	name = aimaniskandar538-ui
+[credential "https://github.com"]
+	helper = 
+	helper = !/data/data/com.termux/files/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/data/data/com.termux/files/usr/bin/gh auth git-credential
